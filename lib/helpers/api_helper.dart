@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:quizu/models/question.dart';
+import 'package:quizu/models/user.dart';
 
 import '../models/score.dart';
 
@@ -51,7 +52,8 @@ class ApiHelper {
 
     return list;
   }
-   Future<List<Score>> getTopScores(String token) async {
+
+  Future<List<Score>> getTopScores(String token) async {
     String url = 'https://quizu.okoul.com/TopScores';
     log('get questions');
     Dio dio = Dio();
@@ -91,5 +93,17 @@ class ApiHelper {
     log(response.toString());
 
     return response.data;
+  }
+
+  Future<User> getUserInfo(String token) async {
+    String url = 'https://quizu.okoul.com/UserInfo';
+
+    Dio dio = Dio();
+    Response response = await dio.get(url,
+        options: Options(headers: {"Authorization": "Bearer $token"}));
+
+    log(response.toString());
+
+    return User(mobile: response.data['mobile'], name: response.data['name']);
   }
 }

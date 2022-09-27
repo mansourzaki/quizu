@@ -4,7 +4,7 @@ import 'dart:convert';
 class Score {
   String? name;
   int? score;
-  DateTime? date;
+  String? date;
   Score({
     this.name,
     this.score,
@@ -15,7 +15,7 @@ class Score {
     return <String, dynamic>{
       'name': name,
       'score': score,
-      'date': date?.millisecondsSinceEpoch,
+      'date': date,
     };
   }
 
@@ -23,9 +23,11 @@ class Score {
     return Score(
       name: map['name'] != null ? map['name'] as String : null,
       score: map['score'] != null ? map['score'] as int : null,
-      date: map['date'] != null ? DateTime.fromMillisecondsSinceEpoch(map['date'] as int) : null,
+      date: map['date'] != null ? map['date'] as String : null,
     );
   }
 
 
+
+  
 }

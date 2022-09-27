@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 import 'package:quizu/presentaion/home_pages/home_screen.dart';
+import 'package:quizu/providers/quiz_provider.dart';
 import 'package:quizu/router.dart';
 
 import '../resources/resources.dart';
@@ -22,6 +24,7 @@ class ErrorScreen extends StatelessWidget {
               alignment: Alignment.topRight,
               child: IconButton(
                   onPressed: () {
+                    
                    AppRouter.pop();
                   },
                   icon: const Icon(
@@ -38,7 +41,9 @@ class ErrorScreen extends StatelessWidget {
           const SizedBox(
             height: 70,
           ),
-          ElevatedButton(onPressed: () {}, child: Text('Try again'))
+          ElevatedButton(onPressed: () {
+            context.read<QuizProvider>().restartQuiz();
+          }, child: Text('Try again'))
         ],
       ),
     );

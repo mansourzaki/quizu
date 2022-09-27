@@ -41,7 +41,7 @@ class DbHelper {
 
   insertNewScroe(Score score) async {
     int rowIndex = await database!
-        .insert(tableName, {'date': score.date!.toIso8601String(), 'score': score.score});
+        .insert(tableName, {'date': score.date, 'score': score.score});
     log(rowIndex.toString());
   }
 

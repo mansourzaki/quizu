@@ -43,7 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icon(Icons.person), label: 'Person'),
                 ]),
           );
-    
   }
 }
 
@@ -68,16 +67,19 @@ class HomePage extends StatelessWidget {
           SizedBox(
             height: AppHeight.h47,
           ),
-          ElevatedButton(
-            onPressed: () async {
-              await context.read<QuizProvider>().getQuestions();
-              final list = context.read<QuizProvider>().questions;
-              AppRouter.navigateToWidget(QuestionScreen(questions: list));
-            },
-            child: Text(
-              AppStrings.quizMeButtonText,
-              style: TextStyle(color: Color(0xFF50524F)),
-            ),
+          AnimatedSwitcher(
+            duration: Duration(milliseconds: 300),
+            child: context.watch<QuizProvider>().isLoading
+                ? CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: () async {
+                      await context.read<QuizProvider>().getQuestions();
+                    },
+                    child: Text(
+                      AppStrings.quizMeButtonText,
+                      style: TextStyle(color: Color(0xFF50524F)),
+                    ),
+                  ),
           ),
 
           // SizedBox(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:quizu/presentaion/resources/resources.dart';
@@ -23,8 +24,8 @@ class ProfileScreen extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: IconButton(
                     onPressed: () {
-                     // context.read<LoginProvider>().logOut();
-                    //  context.read<QuizProvider>().deleteAllMyScore();
+                      context.read<LoginProvider>().logOut();
+                       
                     },
                     icon: const Icon(
                       Icons.logout,
@@ -38,17 +39,21 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(
               height: 70,
             ),
-            const Text(
-              'Name: Mansour Alhaddad',
-              style: TextStyle(fontSize: 20),
-            ),
+            context.watch<LoginProvider>().isLoading
+                ? CircularProgressIndicator()
+                : Text(
+                    context.watch<LoginProvider>().user!.name!.toString(),
+                    style: TextStyle(fontSize: 20),
+                  ),
             const SizedBox(
               height: 10,
             ),
-            const Text(
-              'Mobile: +972567850025',
-              style: const TextStyle(fontSize: 20),
-            ),
+            context.watch<LoginProvider>().isLoading
+                ? CircularProgressIndicator()
+                : Text(
+                    'Mobile: ${context.watch<LoginProvider>().user!.mobile.toString()}',
+                    style: const TextStyle(fontSize: 20),
+                  ),
             const SizedBox(
               height: 70,
             ),
@@ -63,23 +68,61 @@ class ProfileScreen extends StatelessWidget {
               style: TextStyle(
                   fontSize: FontSize.s36, fontWeight: FontWeight.bold),
             ),
-            Table(
+
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: List.generate(
                   provider.myScores.length,
-                  (index) => TableRow(children: [
-                        Center(
-                            child: Text(
-                          DateFormat('h:mm a d/m/yyyy').format(DateTime.parse(
-                              provider.myScores[index].date.toString())),
-                          style: TextStyle(fontSize: FontSize.s24),
-                        )),
-                        Center(
-                            child: Text(
-                          provider.myScores[index].score.toString(),
-                          style: TextStyle(fontSize: FontSize.s24),
-                        ))
-                      ])),
-            ),
+                  (index) => SizedBox(
+                        width: 300.w,
+                        height: 40.h,
+                        child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                DateFormat('h:mm a d/M/yyyy ').format(
+                                    DateTime.parse(provider
+                                        .myScores[index].date
+                                        .toString())),
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                  fontSize: FontSize.s24,
+                                ),
+                              ),
+                              Container(
+                                width: 50.w,
+                                child: Align(
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    provider.myScores[index].score.toString(),
+                                    style: TextStyle(fontSize: FontSize.s24),
+                                  ),
+                                ),
+                              )
+                            ]),
+                      )),
+            )
+
+            // Table(
+            //   // columnWidths: {1: FixedColumnWidth(3), 2: FixedColumnWidth(1)},
+            //   //defaultColumnWidth: FixedColumnWidth(150),
+            //   children: List.generate(
+            //       provider.myScores.length,
+            //       (index) => TableRow(children: [
+            //             Center(
+            //                 child: Text(
+            //               DateFormat('h:mm a d/M/yyyy ').format(DateTime.parse(
+            //                   provider.myScores[index].date.toString())),
+            //               style: TextStyle(
+            //                 fontSize: FontSize.s24,
+            //               ),
+            //             )),
+            //             Text(
+            //               provider.myScores[index].score.toString(),
+            //               style: TextStyle(fontSize: FontSize.s24),
+            //             )
+            //           ])),
+            // ),
           ],
         ),
       ),

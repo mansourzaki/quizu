@@ -36,8 +36,11 @@ class QuestionScreen extends StatelessWidget {
           SizedBox(
             height: 51,
           ),
-          QustionWidget(
-              question: questions[context.watch<QuizProvider>().currentIndex]),
+          context.watch<QuizProvider>().questions.isEmpty
+              ? Text('No Questions Yet...')
+              : QustionWidget(
+                  question:
+                      questions[context.watch<QuizProvider>().currentIndex]),
           SizedBox(
             height: 51,
           ),

@@ -71,16 +71,18 @@ class _EnterYourNameScreenState extends State<EnterYourNameScreen> {
             SizedBox(
               height: AppHeight.h72,
             ),
-            ElevatedButton(
-                onPressed: () async {
-                  // if (_formFieldKey.currentState!.validate()) {
-                  context.read<LoginProvider>().saveName(_controller.text);
-                  //  }
-                },
-                child: const Text(
-                  'Done',
-                  style: TextStyle(color: Color(0xFF50524F)),
-                ))
+            context.watch<LoginProvider>().isLoading
+                ? CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: () async {
+                      // if (_formFieldKey.currentState!.validate()) {
+                      context.read<LoginProvider>().saveName(_controller.text);
+                      //  }
+                    },
+                    child: const Text(
+                      'Done',
+                      style: TextStyle(color: Color(0xFF50524F)),
+                    ))
           ],
         ),
       ),

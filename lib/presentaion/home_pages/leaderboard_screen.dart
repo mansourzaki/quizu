@@ -31,21 +31,26 @@ class LeaderBoardScreen extends StatelessWidget {
           SizedBox(
             height: 74,
           ),
-          Table(
-            children: List.generate(
-                provider.scores.length,
-                (index) => TableRow(children: [
-                      Center(
-                          child: Text(
-                        provider.scores[index].name.toString(),
-                        style: TextStyle(fontSize: FontSize.s24),
-                      )),
-                      Center(
-                          child: Text(
-                        provider.scores[index].score.toString(),
-                        style: TextStyle(fontSize: FontSize.s24),
-                      ))
-                    ])),
+          AnimatedSwitcher(
+            duration: Duration(milliseconds: 300),
+            child: context.watch<QuizProvider>().isLoading
+                ? CircularProgressIndicator()
+                : Table(
+                    children: List.generate(
+                        provider.scores.length,
+                        (index) => TableRow(children: [
+                              Center(
+                                  child: Text(
+                                provider.scores[index].name.toString(),
+                                style: TextStyle(fontSize: FontSize.s24),
+                              )),
+                              Center(
+                                  child: Text(
+                                provider.scores[index].score.toString(),
+                                style: TextStyle(fontSize: FontSize.s24),
+                              ))
+                            ])),
+                  ),
           ),
           // ListView(
           //   shrinkWrap: true,

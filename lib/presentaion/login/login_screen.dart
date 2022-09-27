@@ -24,7 +24,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _controller = TextEditingController();
   final _formFieldKey = GlobalKey<FormFieldState>();
-  String _countrycode = '';
 
   @override
   void dispose() {
@@ -32,15 +31,19 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  bool phoneValiation(String? value) {
-    bool phoneNumberIsValid = false;
-    PhoneNumberUtil().validate('$_countrycode$value').then((value) {
-      log(value.toString());
-      setState(() {});
-      phoneNumberIsValid = value;
-    });
-    return phoneNumberIsValid;
-  }
+  // Future validateNumber(String? value) async {
+  //   phoneNumberIsValid =
+  //       await PhoneNumberUtil().validate('$_countrycode$value');
+  // }
+
+  // bool phoneValiation(String? value) {
+  //   PhoneNumberUtil().validate('$_countrycode$value').then((value) {
+  //     log(value.toString());
+  //     setState(() {});
+  //     phoneNumberIsValid = value;
+  //   });
+  //   return phoneNumberIsValid;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -78,9 +81,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     Padding(
                       padding: const EdgeInsets.only(top: 16.0),
                       child: CountryCodePicker(
-                        onInit: (prefix) => _countrycode = '+966',
+                        onInit: (prefix) =>
+                            context.read<LoginProvider>().countrycode = '+966',
                         onChanged: (prefix) {
-                          _countrycode = prefix.dialCode.toString();
+                          context.read<LoginProvider>().countrycode =
+                              prefix.dialCode.toString();
                         },
                         initialSelection: 'SA',
                         showFlag: true,
@@ -99,24 +104,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           key: _formFieldKey,
                           controller: _controller,
                           keyboardType: TextInputType.phone,
-                          validator: (value) => phoneValiation(value)
-                              ? "Enter valid number"
-                              : null,
-                          // validator: (value) {
-                          //   bool x = false;
-                          //   PhoneNumberUtil()
-                          //       .validate('$_countrycode$value')
-                          //       .then((value) {
-                          //     log(value.toString());
-                          //     x = value;
-                          //   });
-                          //   if (x) {
-                          //     return null;
-                          //   } else {
-                          //     return 'Enter valid number';
-                          //   }
-                          // },
-                          decoration: InputDecoration(
+                          validator: (value) =>
+                              !context.read<LoginProvider>().phoneNumberIsValid
+                                  ? "Enter valid number"
+                                  : null,
+                          decoration: const InputDecoration(
                               hintText: AppStrings.numberHint,
                               border: OutlineInputBorder(
                                 borderSide: BorderSide(),
@@ -125,38 +117,27 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ],
-                )
-
-                // child: TextField(
-                //     controller: _controller,
-
-                //     decoration: const InputDecoration(
-                //       hintText: AppStrings.numberHint,
-                //       border: OutlineInputBorder(
-                //         borderSide: BorderSide(),
-                //       ),
-                //     )),
-                ),
+                )),
             SizedBox(
               height: AppHeight.h72,
             ),
-            ElevatedButton(
-                onPressed: () async {
-                  if (_formFieldKey.currentState!.validate()) {
-                    log(_controller.text);
-                    print(await SecureStorageHelper.secureStoreageHelper
-                        .readToken('token'));
-                    context.read<LoginProvider>().phoneNumber =
-                        '$_countrycode${_controller.text}}';
-                    AppRouter.navigateToWidget(OTPScreen());
-                  } else {
-                    log('message');
-                  }
-                },
-                child: const Text(
-                  'Start',
-                  style: TextStyle(color: Color(0xFF50524F)),
-                ))
+            AnimatedSwitcher(
+              duration: Duration(milliseconds: 300),
+              child: context.watch<LoginProvider>().isLoading
+                  ? CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: () async {
+                        await context
+                            .read<LoginProvider>()
+                            .validateNumber(_controller.text);
+                        log(_controller.text);
+                        _formFieldKey.currentState!.validate();
+                      },
+                      child: const Text(
+                        'Start',
+                        style: TextStyle(color: Color(0xFF50524F)),
+                      )),
+            )
           ],
         ),
       ),

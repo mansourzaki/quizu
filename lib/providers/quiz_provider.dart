@@ -12,19 +12,21 @@ import '../helpers/api_helper.dart';
 import '../helpers/secure_storage.dart';
 import '../models/question.dart';
 import '../models/score.dart';
+import '../presentaion/home_pages/questions_screen.dart';
 
 class QuizProvider with ChangeNotifier {
-  int currentIndex = 25;
+  int currentIndex = 0;
   List<Question> questions = [];
   List<Score> scores = [];
   List<Score> myScores = [];
   int score = 1;
   int currentPage = 0;
+  bool isLoading = false;
   Timer? timer;
   Duration remainingTime = Duration();
   void nextPage(int index) async {
     if (index == 1) {
-      // await getTopScores();
+       getTopScores();
     }
     currentPage = index;
 
@@ -33,25 +35,30 @@ class QuizProvider with ChangeNotifier {
 
   QuizProvider() {
     getTopScores();
+    getMyScores();
   }
 
   void nextQuestion() {
     if (questions.length - 1 == currentIndex) {
-      // sendScore(score.toString());
-      // final newScore = Score(date: DateTime.now(), score: score);
-      // addNewScore(newScore);
+      score++;
+      sendScore(score.toString());
+      final newScore =
+          Score(date: DateTime.now().toIso8601String(), score: score);
+      addNewScore(newScore);
       // myScores.add(newScore);
-
+      log('reached final page');
       AppRouter.navigatWithReplcamentToWidget(FinishedScreen(
         score: score,
       ));
-      currentIndex = 0;
+
       questions.clear();
-      score = 0;
       log('in if');
 
       return;
     } else {
+      log(currentIndex.toString() + ' ' + questions.length.toString());
+
+      log('ni else');
       currentIndex++;
       log(currentIndex.toString());
       score++;
@@ -60,19 +67,32 @@ class QuizProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void scoreUp() {
+    score++;
+    notifyListeners();
+  }
+
   void skipQuestion() {
     if (questions.length - 1 == currentIndex) {
+      score++;
       sendScore(score.toString());
-      questions.clear();
+      final newScore =
+          Score(date: DateTime.now().toIso8601String(), score: score);
+      addNewScore(newScore);
+      // myScores.add(newScore);
+      log('reached final page');
       AppRouter.navigatWithReplcamentToWidget(FinishedScreen(
         score: score,
       ));
-      currentIndex = 0;
-      score = 0;
+
+      questions.clear();
       log('in if');
 
       return;
     } else {
+      log(currentIndex.toString() + ' ' + questions.length.toString());
+
+      log('ni else');
       currentIndex++;
       log(currentIndex.toString());
     }
@@ -94,11 +114,27 @@ class QuizProvider with ChangeNotifier {
   }
 
   Future<void> getQuestions() async {
+    changeLoadingStatus(true);
+    score = 0;
+    currentIndex = 0;
     final token =
         await SecureStorageHelper.secureStoreageHelper.readToken('token') ?? '';
     final response = await ApiHelper.apiHelper.getQuestions(token);
     questions = response;
     startTimer();
+
+    AppRouter.navigateToWidget(QuestionScreen(questions: questions));
+    changeLoadingStatus(false);
+    notifyListeners();
+    //return response;
+  }
+
+  Future<void> restartQuiz() async {
+    score = 0;
+    currentIndex = 0;
+    startTimer();
+    AppRouter.navigatWithReplcamentToWidget(
+        QuestionScreen(questions: questions));
     //return response;
   }
 
@@ -106,12 +142,14 @@ class QuizProvider with ChangeNotifier {
     remainingTime = const Duration(seconds: 120);
     if (timer == null) {
       timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
-        if (remainingTime.inSeconds == 0) {
-          final newScore = Score(date: DateTime.now(), score: score);
+        if (remainingTime.inSeconds == 110) {
+          final newScore =
+              Score(date: DateTime.now().toIso8601String(), score: score);
           await sendScore(newScore.score.toString());
           addNewScore(newScore);
 
           stopTimer();
+          AppRouter.navigatWithReplcamentToWidget(FinishedScreen(score: score));
         } else {
           countDownFun();
         }
@@ -120,7 +158,8 @@ class QuizProvider with ChangeNotifier {
       timer!.cancel();
       timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
         if (remainingTime.inSeconds == 0) {
-          final newScore = Score(date: DateTime.now(), score: score);
+          final newScore =
+              Score(date: DateTime.now().toIso8601String(), score: score);
           await sendScore(newScore.score.toString());
           addNewScore(newScore);
           stopTimer();
@@ -138,17 +177,29 @@ class QuizProvider with ChangeNotifier {
   }
 
   Future<void> getTopScores() async {
+    changeLoadingStatus(true);
     final token =
         await SecureStorageHelper.secureStoreageHelper.readToken('token') ?? '';
     log(token.toString());
     final response = await ApiHelper.apiHelper.getTopScores(token);
     scores = response;
     log(response[0].name.toString());
+    changeLoadingStatus(false);
+    notifyListeners();
     //return response;
   }
 
+  void changeLoadingStatus(bool v) {
+    isLoading = v;
+    notifyListeners();
+  }
+
   Future<void> getMyScores() async {
+    myScores.clear();
     myScores = await DbHelper.dbHelper.selectAllScores();
+    myScores.sort(
+      (a, b) => DateTime.parse(b.date!).compareTo(DateTime.parse(a.date!)),
+    );
     notifyListeners();
   }
 
